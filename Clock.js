@@ -138,6 +138,7 @@ var Clock = (function() {
             drawSpokeLine(g, 0.65 * scale, 0.80 * scale, angle);
 
             var minSection = timeFraction * 10 - Math.floor(timeFraction * 10);
+            minSection = Math.floor(minSection * 100) / 100;
             angle = (minSection * FULL_CIRCLE) + zeroAngle;
             g.strokeStyle = "rgb(90, 230, 90)";
             g.lineWidth = 3 * scale / 100;
@@ -211,7 +212,7 @@ var Clock = (function() {
             } else {
                 mon = mon + "th ";
             }
-            g.fillText( mon +" "+today, -0.95 * scale, 0.92 * scale);
+            g.fillText( mon+today, -0.95 * scale, 0.92 * scale);
             g.fillText(legacyToday, 0.50 * scale, 0.92 * scale);
 
             this.drawHands(g, scale);
