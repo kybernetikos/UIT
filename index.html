@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UDT - Universal Decimal Time</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="solar/JulianDay.js"></script>
+    <script src="solar/Time.js"></script>
+    <script src="solar/SolarPosition.js"></script>
+    <script src="Clock.js"></script>
+
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+        html, body {
+            left: 0px;
+            right: 0px;
+            top: 0px;
+            bottom: 0px;
+            position: absolute;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="display"></canvas>
+
+    <script type="text/javascript">
+
+        var reqFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+
+        var canvas = document.getElementById('display');
+        var g = canvas.getContext("2d");
+
+        window.onresize = function() {
+            canvas.setAttribute("width", document.body.clientWidth);
+            canvas.setAttribute("height", document.body.clientHeight);
+        };
+        window.onresize();
+
+        var clock = new Clock();
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+            clock.setLocation(position.coords.latitude, position.coords.longitude);
+        });
+
+        function render() {
+            var width = Number(canvas.getAttribute("width"));
+            var height = Number(canvas.getAttribute("height"));
+            g.clearRect(0, 0, width, height);
+            clock.render(g, width / 2, height / 2, Math.min(width / 2, height / 2));
+            reqFrame(render, canvas);
+        }
+        render();
+
+    </script>
+</body>
+</html>
