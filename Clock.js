@@ -49,11 +49,11 @@ var Clock = (function() {
         }
     }
 
-    function label(g, radius, startAngle, labels) {
+    function label(g, radius, startAngle, labels, scale) {
         for (var i = 0; i < labels.length; ++i) {
             var theta = startAngle + i * (Math.PI * 2 / labels.length);
-            var y = radius * Math.sin(theta) + 8;
-            if (y > 0) y -= 2;
+            var y = radius * Math.sin(theta) + 0.08 * scale;
+            if (y > 0) y -= 0.02 * scale;
             g.fillText(labels[i], radius * Math.cos(theta), y);
             g.strokeText(labels[i], radius * Math.cos(theta), y);
         }
@@ -121,10 +121,10 @@ var Clock = (function() {
             g.strokeStyle = "rgb(255, 255, 255)";
             g.lineWidth = 4 * scale / 100;
             // label(g, 90, offset, ["O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]);
-            label(g, 0.70 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+            label(g, 0.70 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
             g.strokeStyle = "rgb(100, 100, 100)";
             g.lineWidth = 0.5 * scale / 100;
-            label(g, 0.70 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+            label(g, 0.70 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
         },
 
         drawHands: function drawHands(g, scale, date) {
