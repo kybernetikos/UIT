@@ -71,8 +71,9 @@
             var centerY = height / 2;
             var max = Math.max(width, height);
             var longest = Math.sqrt(max * max * 2);
+            var scale = Math.min(centerX, centerY);
             g.clearRect(0, 0, width, height);
-            clock.render(g, centerX, centerY, Math.min(centerX, centerY));
+            clock.render(g, centerX, centerY, scale);
             //g.fillRect(width / 2 - 5, height / 2 - 5, 10, 10);
             // no need to draw every frame.
             if (selection.draw) {
@@ -85,10 +86,11 @@
                 var time =  clock.screenAngleToTime(angle);
                 var nuTime = clock.utils.formatFraction(time.valueOf());
                 var oldTime = time.changeTimeZone(0, localTimeZone).toString();
-                clock.utils.drawTextAlongArc(g, nuTime, 0, 0, 90, angle);
+                g.font = (0.04 * scale) + "px monospace";
+                clock.utils.drawTextAlongArc(g, nuTime, 0, 0, 0.77 * scale, angle);
                 g.textAlign = "right";
                 g.fillStyle = "rgba(0, 0, 0, 0.7)";
-                clock.utils.drawTextAlongArc(g, oldTime, 0, 0, 90, angle);
+                clock.utils.drawTextAlongArc(g, oldTime, 0, 0, 0.77 * scale, angle);
                 g.restore();
             }
             setTimeout(animate, 100);

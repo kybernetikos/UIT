@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="238324e5-6997-4584-928f-322819056ab7" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Clock.js" afterPath="$PROJECT_DIR$/Clock.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
     </list>
     <ignored path="Clock.iws" />
@@ -69,7 +68,7 @@
       <file leaf-file-name="index.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="89" column="52" selection-start="3201" selection-end="3201" vertical-scroll-proportion="0.830605">
+            <state line="88" column="30" selection-start="3098" selection-end="3098" vertical-scroll-proportion="0.81850535">
               <folding />
             </state>
           </provider>
@@ -371,7 +370,11 @@
       <created>1347578803784</created>
       <updated>1347578803784</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Selection and rendering in local and UIT">
+      <created>1347610368505</created>
+      <updated>1347610368505</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -438,7 +441,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Made minute hand ticky. Removed unnecessary space." />
+    <option name="LAST_COMMIT_MESSAGE" value="Selection and rendering in local and UIT" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -452,6 +455,7 @@
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
     <MESSAGE value="Made minute hand ticky. Removed unnecessary space." />
+    <MESSAGE value="Selection and rendering in local and UIT" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -564,7 +568,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="89" column="52" selection-start="3201" selection-end="3201" vertical-scroll-proportion="0.830605">
+        <state line="88" column="30" selection-start="3098" selection-end="3098" vertical-scroll-proportion="0.81850535">
           <folding />
         </state>
       </provider>
