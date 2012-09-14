@@ -5,9 +5,9 @@ var Clock = (function() {
     var LEGACY_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     var NEW_DAYS = ["Nullday", "Unday", "Duoday", "Triday", "Quadday", "Pentday", "Hexday", "Heptday", "Octday", "Nonday"];
 
-    function dayOfYear(date) {
+    function dayOfUTCYear(date) {
         date = date || new Date();
-        var yearStart = Date.UTC(date.getFullYear(), 0, 1, 0, 0, 0);
+        var yearStart = Date.UTC(date.getUTCFullYear(), 0, 1, 0, 0, 0);
         var millis = date.getTime() - yearStart;
         return Math.floor(millis / (1000 * 60 * 60 * 24));
     }
@@ -70,8 +70,8 @@ var Clock = (function() {
         // thanks to http://www.mresoftware.com/simpleDST.htm
         today = today || new Date();
         var year = today.getFullYear();
-        var january = new Date(year, 0);	// January 1
-        var july = new Date(year, 6);	// July 1
+        var january = new Date(year, 0);	// January 1 local
+        var july = new Date(year, 6);	// July 1 local
         // northern hemisphere test
         if (january.getTimezoneOffset() > july.getTimezoneOffset() && today.getTimezoneOffset() != january.getTimezoneOffset()){
             return true;
@@ -81,6 +81,13 @@ var Clock = (function() {
             return true;
         }
         return false;
+    }
+
+    function formatFraction(timeFraction) {
+        var mss = "00000000" + Math.floor(timeFraction * (10 * 100 * 100 * 1000));
+        mss = mss.substring(mss.length - 8);
+        mss = "." + mss.substring(0, 1) + ":" + mss.substring(1, 3) + ":" + mss.substring(3, 5) + ":" + mss.substring(5);
+        return mss;
     }
 
     function Clock() {
@@ -120,9 +127,9 @@ var Clock = (function() {
             label(g, 0.70 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
         },
 
-        drawHands: function drawHands(g, scale) {
+        drawHands: function drawHands(g, scale, date) {
             var zeroAngle = this.offsetProportion * FULL_CIRCLE + QUARTER_CIRCLE;
-            var date = new Date();
+            date = date || new Date();
             var localTime = Time.fromDate(date);
             var time = localTime.changeTimeZone(date.getTimezoneOffset() / -60, 0);
             var timeFraction = time.valueOf();
@@ -154,11 +161,7 @@ var Clock = (function() {
             g.font = (6 * scale / 100) + "px monospace";
             g.textAlign = "left";
             g.fillStyle= "black";
-
-            var mss = "00000000" + Math.floor(timeFraction * (10 * 100 * 100 * 1000));
-            mss = mss.substring(mss.length - 8);
-            mss = "." + mss.substring(0, 1) + ":" + mss.substring(1, 3) + ":" + mss.substring(3, 5) + ":" + mss.substring(5);
-            g.fillText(mss, -0.95 * scale, 0.98 * scale);
+            g.fillText(formatFraction(timeFraction), -0.95 * scale, 0.98 * scale);
             g.fillText(localTime.toString(), 0.50 * scale, 0.98 * scale);
         },
 
@@ -182,17 +185,17 @@ var Clock = (function() {
 
             g.font = (6 * scale / 100) + "px monospace";
 
-            var now = new Date();
-            var yearDay = dayOfYear(now);
+            var localTime = new Date();
+            var yearDay = dayOfUTCYear(localTime);
             var today  = NEW_DAYS[yearDay % 10];
             g.textAlign = "right";
             g.fillStyle = "black";
             drawTextAlongArc(g, today.toUpperCase(), 0, 0, 0.9 * scale, zeroAngle);
             drawSpokeLine(g, 0.88 * scale, 0.96 * scale, zeroAngle);
 
-            var legacyWeekDay = new Date().getDay();
+            var legacyWeekDay = localTime.getDay();
             var legacyToday = LEGACY_DAYS[legacyWeekDay % 7];
-            var tzProportion = (now.getTimezoneOffset())/ (24 * 60);
+            var tzProportion = (localTime.getTimezoneOffset())/ (24 * 60);
 
             g.textAlign = "right";
             drawTextAlongArc(g, legacyToday.toUpperCase(), 0, 0, 0.82 * scale, zeroAngle + tzProportion * FULL_CIRCLE );
@@ -215,7 +218,10 @@ var Clock = (function() {
             g.fillText( mon+today, -0.95 * scale, 0.92 * scale);
             g.fillText(legacyToday, 0.50 * scale, 0.92 * scale);
 
-            this.drawHands(g, scale);
+            this.drawHands(g, scale, localTime);
+            circle(0.02 * scale);
+            g.fillStyle = "rgb(90, 90, 230)";
+            g.fill();
             g.restore();
         },
         setLocation: function setPosition(lat, long) {
@@ -229,9 +235,14 @@ var Clock = (function() {
             // this is the time of local solar midnight as a fraction of a UTC day.
             this.offsetProportion = - (result.sunTransitUTC.valueOf() - 0.5);
         },
+        screenAngleToTime: function screenAngleToTime(angle) {
+            var dayFraction = (angle - QUARTER_CIRCLE) / FULL_CIRCLE;
+            if (dayFraction < 0) dayFraction += 1;
+            return new Time(dayFraction - this.offsetProportion);
+        },
         utils: {
-            dayOfYear:dayOfYear,   drawTextAlongArc:drawTextAlongArc,      drawSpokeLine:drawSpokeLine,
-            label:label, circle:circle,   isDST:isDST
+            dayOfYear:dayOfUTCYear,   drawTextAlongArc:drawTextAlongArc,      drawSpokeLine:drawSpokeLine,
+            label:label, circle:circle,   isDST:isDST, formatFraction: formatFraction
         }
     };
 

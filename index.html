@@ -28,8 +28,6 @@
 
     <script type="text/javascript">
 
-        var reqFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
-
         var canvas = document.getElementById('display');
         var g = canvas.getContext("2d");
 
@@ -45,14 +43,60 @@
             clock.setLocation(position.coords.latitude, position.coords.longitude);
         });
 
+        var selection = {x:0, y:0, draw: false};
+        var mouseDown = false;
+        canvas.onmousedown = function(event) {
+            mouseDown = true;
+            this.onmousemove(event);
+        };
+        canvas.onmouseup = function() {
+            mouseDown = false;
+            setTimeout(function() {
+                selection.draw = false;
+            }, 1000);
+        };
+        canvas.onmousemove = function(event) {
+            if (mouseDown) {
+                selection.x = event.clientX;
+                selection.y = event.clientY;
+                selection.draw = true;
+            }
+        };
+
+        var localTimeZone = new Date().getTimezoneOffset() / -60;
         function render() {
             var width = Number(canvas.getAttribute("width"));
             var height = Number(canvas.getAttribute("height"));
+            var centerX = width / 2;
+            var centerY = height / 2;
+            var max = Math.max(width, height);
+            var longest = Math.sqrt(max * max * 2);
             g.clearRect(0, 0, width, height);
-            clock.render(g, width / 2, height / 2, Math.min(width / 2, height / 2));
-            reqFrame(render, canvas);
+            clock.render(g, centerX, centerY, Math.min(centerX, centerY));
+            //g.fillRect(width / 2 - 5, height / 2 - 5, 10, 10);
+            // no need to draw every frame.
+            if (selection.draw) {
+                g.save();
+                g.translate(centerX, centerY);
+                var angle = - Math.atan2(selection.x - centerX, selection.y - centerY) + Math.PI / 2;
+                g.strokeStyle = "rgba(0, 0, 0, 0.2)";
+                g.lineWidth = 2;
+                clock.utils.drawSpokeLine(g, 0, longest, angle);
+                var time =  clock.screenAngleToTime(angle);
+                var nuTime = clock.utils.formatFraction(time.valueOf());
+                var oldTime = time.changeTimeZone(0, localTimeZone).toString();
+                clock.utils.drawTextAlongArc(g, nuTime, 0, 0, 90, angle);
+                g.textAlign = "right";
+                g.fillStyle = "rgba(0, 0, 0, 0.7)";
+                clock.utils.drawTextAlongArc(g, oldTime, 0, 0, 90, angle);
+                g.restore();
+            }
+            setTimeout(animate, 100);
         }
-        render();
+
+        var reqFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+        var animate = reqFrame.bind(null, render, canvas);
+        animate();
 
     </script>
 </body>
