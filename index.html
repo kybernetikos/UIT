@@ -33,6 +33,8 @@
     <canvas id="display"></canvas>
 
     <script type="text/javascript">
+        var star = new Image();
+        star.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAACy0lEQVR42s2VXUhTYRjHX5msSNKyTIPIBJWwLgRTsCDSmywjUgwyLIU+tFqtoky6sFRCoyx1assobIiGyVJLMSsdxqYommlLxwKVCEOQpAv3np33+O8J76TEyUZd/HngcPj9nvd5zgcD4NH8XwIxejFGfDof6znBiNYghjUGjwgU2+Ug8fmCJIbOSqL/dJDbBdR9rjJRC2WsGqLvZK5bBQRX0+wn8e0Z8PUp5O6MSbkrTe02Ac39qGLXEVwPjJdCGSqA3HHkmPsEH7Isc+MEHysCvuRjzlYIuT3F4pKAIBoxmCXE4BnMJwtiIBOi/xQUW/k83HYdGLlCyYbozYazKRHOhj2Q6qIhGSIgPQmG9ChQcP1azR9PQMtLoEzPTTQCPz8CM/3Aj16CVwKjOYD1EjCkAUgO6zXgexMwaaRqhLCcA3+4fppX+CQsOiLZkh4qm9PtyjAB7XnU7VWCaYHh3+BMYOAE0JcG9KQAlgNUEyG3xIC6tnPditAl7UDuTPWnJZpETwZBjwO9h4HuJMB8EOjaC3TuBt5FU42EbAwHf+Bn4mXe/i4t2dmWrHK2HtIp5lSCJwPv9wGmOALHAu2RlAiIZoJXrtbxMpVqWU+Rs3F/pPyKwGbqumMn8CYKaIsAWrYAr4PhfLwGvNSLbGDLE9TvKlbexhE8hoDbgNYw4OUmoGkd0OwH8dwX/C4rWZZAqotSSTXbp2CKpq7DSBBCdTN1H0hwH6DBi0RqOIrYlOMWU7kuqA5Nkl/soJmHA+3BkOsDQbOe4ffZjFzjTXAGNDI4qxgcBSzJdUHVBqNo20qL3Egv0Erwe8xA4whw3KYUMoOkYxC1lHoS3GRGlwRc7x/AK1ZJcq0vCGzld1j8wnsc+SyewFanngQ3mEQJWLqgfKWWl7BZXsxyqOO/fjUJqqbkUGYp2qULSr3yCB6y8PoiohBK3j/76Xs0vwCREourrc6evAAAAABJRU5ErkJggg==";
 
         var canvas = document.getElementById('display');
         var g = canvas.getContext("2d");
@@ -70,6 +72,7 @@
         };
 
         var localTimeZone = new Date().getTimezoneOffset() / -60;
+        var events = [];
         function render() {
             var width = Number(canvas.getAttribute("width"));
             var height = Number(canvas.getAttribute("height"));
@@ -77,9 +80,11 @@
             var centerY = height / 2;
             var max = Math.max(width, height);
             var longest = Math.sqrt(max * max * 2);
-            var scale = Math.min(centerX, centerY);
+            var scale = Math.min(width, height);
             g.clearRect(0, 0, width, height);
-            clock.render(g, centerX, centerY, scale);
+
+            clock.render(g, centerX - scale / 2, centerY - scale / 2, scale);
+
             //g.fillRect(width / 2 - 5, height / 2 - 5, 10, 10);
             // no need to draw every frame.
             if (selection.draw) {
@@ -92,12 +97,39 @@
                 var time =  clock.screenAngleToTime(angle);
                 var nuTime = clock.utils.formatFraction(time.valueOf());
                 var oldTime = time.changeTimeZone(0, localTimeZone).toString();
-                g.font = (0.04 * scale) + "px monospace";
-                clock.utils.drawTextAlongArc(g, nuTime, 0, 0, 0.77 * scale, angle);
+                g.font = (0.02 * scale) + "px monospace";
+                clock.utils.drawTextAlongArc(g, nuTime, 0, 0, 0.385 * scale, angle);
                 g.textAlign = "right";
                 g.fillStyle = "rgba(0, 0, 0, 0.7)";
-                clock.utils.drawTextAlongArc(g, oldTime, 0, 0, 0.77 * scale, angle);
+                clock.utils.drawTextAlongArc(g, oldTime, 0, 0, 0.385 * scale, angle);
                 g.restore();
+            }
+            for (var i=0; i < events.length; ++i) {
+                var event = events[i];
+                if (event.time) {
+                    var angle = clock.timeToScreenAngle(event.time);
+                    distanceOut = 0.5 * scale;
+                    var x = distanceOut * Math.cos(angle) + centerX - star.width / 2;
+                    var y = distanceOut * Math.sin(angle) + centerY - star.height / 2;
+                    g.drawImage(star, x, y);
+                }
+                if (event.start) {
+                    var startAngle = clock.timeToScreenAngle(event.start);
+                    var endAngle = clock.timeToScreenAngle(event.end);
+                    g.lineWidth = 6;
+                    g.strokeStyle = "rgba(180, 230, 180, 0.8)";
+                    g.beginPath();
+                    g.arc(centerX, centerY, (0.5 + (i * 0.02)) * scale, startAngle, endAngle);
+                    g.stroke();
+                    var angle = (endAngle - startAngle) / 2 + startAngle;
+                    distanceOut = (0.5 + (i * 0.01)) * scale;
+                    var x = distanceOut * Math.cos(angle) + centerX;
+                    var y = distanceOut * Math.sin(angle) + centerY;
+                }
+                if (event.label) {
+                    var width = g.measureText(event.label).width;
+                    g.fillText(event.label, x - width / 2, y);
+                }
             }
             setTimeout(animate, 100);
         }

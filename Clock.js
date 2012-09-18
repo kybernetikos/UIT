@@ -5,6 +5,8 @@ var Clock = (function() {
     var LEGACY_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     var NEW_DAYS = ["Nullday", "Unday", "Duoday", "Triday", "Quadday", "Pentday", "Hexday", "Heptday", "Octday", "Nonday"];
 
+    var OUTER_CIRCLE = 0.4015;
+
     function dayOfUTCYear(date) {
         date = date || new Date();
         var yearStart = Date.UTC(date.getUTCFullYear(), 0, 1, 0, 0, 0);
@@ -52,8 +54,7 @@ var Clock = (function() {
     function label(g, radius, startAngle, labels, scale) {
         for (var i = 0; i < labels.length; ++i) {
             var theta = startAngle + i * (Math.PI * 2 / labels.length);
-            var y = radius * Math.sin(theta) + 0.08 * scale;
-            if (y > 0) y -= 0.02 * scale;
+            var y = radius * Math.sin(theta);
             g.fillText(labels[i], radius * Math.cos(theta), y);
             g.strokeText(labels[i], radius * Math.cos(theta), y);
         }
@@ -102,29 +103,30 @@ var Clock = (function() {
         drawFace: function drawFace(g, scale) {
             var zeroAngle = this.offsetProportion * FULL_CIRCLE + QUARTER_CIRCLE;
             g.strokeStyle = "rgb(200, 200, 200)";
+            g.lineWidth = 0.05 * scale / 100;
+            spokes(g, OUTER_CIRCLE * scale, 0.25 * scale, zeroAngle, 100);
             g.lineWidth = 0.1 * scale / 100;
-            spokes(g, 0.80 * scale, 0.50 * scale, zeroAngle, 100);
-            g.lineWidth = 0.2 * scale / 100;
-            circle(0.76 * scale);
-            spokes(g, 0.80 * scale, 0.20 * scale,  zeroAngle, 20);
-            g.lineWidth = 0.5 * scale / 100;
-            circle(0.10 * scale);
-            circle(0.80 * scale);
-            spokes(g, 0.80 * scale, 0.10 * scale, zeroAngle, 10);
+            circle(0.38 * scale);
+            spokes(g, OUTER_CIRCLE * scale, 0.10 * scale,  zeroAngle, 20);
+            g.lineWidth = 0.25 * scale / 100;
+            circle(0.05 * scale);
+            circle(OUTER_CIRCLE * scale);
+            spokes(g, OUTER_CIRCLE * scale, 0.05 * scale, zeroAngle, 10);
 
-            drawSpokeLine(g, 0, 0.1 * scale, QUARTER_CIRCLE);
-            drawSpokeLine(g, 0, 0.1 * scale, 3 * QUARTER_CIRCLE);
+            drawSpokeLine(g, 0, 0.05 * scale, QUARTER_CIRCLE);
+            drawSpokeLine(g, 0, 0.05 * scale, 3 * QUARTER_CIRCLE);
 
-            g.font = (15*scale / 100) + "px serif";
+            g.font = (7.5 * scale / 100) + "px serif";
+            g.textBaseline = "middle";
             g.textAlign = "center";
             g.fillStyle = "rgb(150, 150, 150)";
             g.strokeStyle = "rgb(255, 255, 255)";
-            g.lineWidth = 4 * scale / 100;
+            g.lineWidth = 2 * scale / 100;
             // label(g, 90, offset, ["O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]);
-            label(g, 0.70 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
+            label(g, 0.35 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
             g.strokeStyle = "rgb(100, 100, 100)";
-            g.lineWidth = 0.5 * scale / 100;
-            label(g, 0.70 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
+            g.lineWidth = 0.25 * scale / 100;
+            label(g, 0.35 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
         },
 
         drawHands: function drawHands(g, scale, date) {
@@ -139,30 +141,30 @@ var Clock = (function() {
             secSection = Math.floor(secSection * 100) / 100;
             angle = (secSection * FULL_CIRCLE) + zeroAngle;
             g.strokeStyle = "rgb(230, 90, 90)";
-            g.lineWidth = 1 * scale / 100;
-            drawSpokeLine(g, 0, 0.80 * scale, angle);
-            g.lineWidth = 3 * scale / 100;
-            drawSpokeLine(g, 0.65 * scale, 0.80 * scale, angle);
+            g.lineWidth = 0.5 * scale / 100;
+            drawSpokeLine(g, 0, OUTER_CIRCLE * scale, angle);
+            g.lineWidth = 1.5 * scale / 100;
+            drawSpokeLine(g, 0.325 * scale, OUTER_CIRCLE * scale, angle);
 
             var minSection = timeFraction * 10 - Math.floor(timeFraction * 10);
             minSection = Math.floor(minSection * 100) / 100;
             angle = (minSection * FULL_CIRCLE) + zeroAngle;
             g.strokeStyle = "rgb(90, 230, 90)";
-            g.lineWidth = 3 * scale / 100;
-            drawSpokeLine(g, 0.55 * scale, 0.65 * scale, angle);
-            g.lineWidth = 1 * scale / 100;
-            drawSpokeLine(g, 0, 0.65 * scale, angle);
+            g.lineWidth = 1.5 * scale / 100;
+            drawSpokeLine(g, 0.275 * scale, 0.325 * scale, angle);
+            g.lineWidth = 0.5 * scale / 100;
+            drawSpokeLine(g, 0, 0.325 * scale, angle);
 
             g.strokeStyle = "rgb(90, 90, 230)";
-            g.lineWidth = 3 * scale / 100;
+            g.lineWidth = 1.5 * scale / 100;
             angle = (timeFraction * FULL_CIRCLE) + zeroAngle;
-            drawSpokeLine(g, 0, 0.55 * scale, angle);
+            drawSpokeLine(g, 0, 0.275 * scale, angle);
 
-            g.font = (6 * scale / 100) + "px monospace";
+            g.font = (3 * scale / 100) + "px monospace";
             g.textAlign = "left";
             g.fillStyle= "black";
-            g.fillText(formatFraction(timeFraction), -0.95 * scale, 0.98 * scale);
-            g.fillText(localTime.toString(), 0.50 * scale, 0.98 * scale);
+            g.fillText(formatFraction(timeFraction), -0.475 * scale, 0.49 * scale);
+            g.fillText(localTime.toString(), 0.25 * scale, 0.49 * scale);
         },
 
         drawNightPeriod:function(g, scale) {
@@ -170,7 +172,7 @@ var Clock = (function() {
             g.fillStyle = "rgba(50, 50, 50, 0.1)";
             g.beginPath();
             g.moveTo(0, 0);
-            g.arc(0, 0, 0.76 * scale, this.rise * FULL_CIRCLE + zeroAngle, this.set * FULL_CIRCLE + zeroAngle, true);
+            g.arc(0, 0, 0.38 * scale, this.rise * FULL_CIRCLE + zeroAngle, this.set * FULL_CIRCLE + zeroAngle, true);
             g.moveTo(0, 0);
             g.closePath();
             g.fill();
@@ -178,30 +180,30 @@ var Clock = (function() {
 
         render: function render(g, centerX, centerY, scale) {
             g.save();
-            g.translate(centerX, centerY);
+            g.translate(centerX + scale / 2, centerY + scale / 2);
             var zeroAngle = this.offsetProportion * FULL_CIRCLE + QUARTER_CIRCLE;
             this.drawFace(g, scale);
             this.drawNightPeriod(g, scale);
 
-            g.font = (6 * scale / 100) + "px monospace";
+            g.font = (3 * scale / 100) + "px monospace";
 
             var localTime = new Date();
             var yearDay = dayOfUTCYear(localTime);
             var today  = NEW_DAYS[yearDay % 10];
             g.textAlign = "right";
             g.fillStyle = "black";
-            drawTextAlongArc(g, today.toUpperCase(), 0, 0, 0.9 * scale, zeroAngle);
-            drawSpokeLine(g, 0.88 * scale, 0.96 * scale, zeroAngle);
+            drawTextAlongArc(g, today.toUpperCase(), 0, 0, 0.46 * scale, zeroAngle);
+            drawSpokeLine(g, 0.44 * scale, 0.48 * scale, zeroAngle);
 
             var legacyWeekDay = localTime.getDay();
             var legacyToday = LEGACY_DAYS[legacyWeekDay % 7];
             var tzProportion = (localTime.getTimezoneOffset())/ (24 * 60);
 
             g.textAlign = "right";
-            drawTextAlongArc(g, legacyToday.toUpperCase(), 0, 0, 0.82 * scale, zeroAngle + tzProportion * FULL_CIRCLE );
-            drawSpokeLine(g, 0.80 * scale, 0.88 * scale, zeroAngle + tzProportion * FULL_CIRCLE);
+            drawTextAlongArc(g, legacyToday.toUpperCase(), 0, 0, 0.42 * scale, zeroAngle + tzProportion * FULL_CIRCLE );
+            drawSpokeLine(g, OUTER_CIRCLE * scale, 0.44 * scale, zeroAngle + tzProportion * FULL_CIRCLE);
 
-            g.font = (6 * scale / 100) + "px monospace";
+            g.font = (3 * scale / 100) + "px monospace";
 
             g.textAlign = "left";
             g.fillStyle= "black";
@@ -215,11 +217,11 @@ var Clock = (function() {
             } else {
                 mon = mon + "th ";
             }
-            g.fillText( mon+today, -0.95 * scale, 0.92 * scale);
-            g.fillText(legacyToday, 0.50 * scale, 0.92 * scale);
+            g.fillText( mon+today, -0.475 * scale, 0.46 * scale);
+            g.fillText(legacyToday, 0.25 * scale, 0.46 * scale);
 
             this.drawHands(g, scale, localTime);
-            circle(0.02 * scale);
+            circle(0.01 * scale);
             g.fillStyle = "rgb(90, 90, 230)";
             g.fill();
             g.restore();
@@ -239,6 +241,9 @@ var Clock = (function() {
             var dayFraction = (angle - QUARTER_CIRCLE) / FULL_CIRCLE;
             if (dayFraction < 0) dayFraction += 1;
             return new Time(dayFraction - this.offsetProportion);
+        },
+        timeToScreenAngle: function timeToScreenAngle(time) {
+           return (time.valueOf() + this.offsetProportion) * FULL_CIRCLE + QUARTER_CIRCLE;
         },
         utils: {
             dayOfYear:dayOfUTCYear,   drawTextAlongArc:drawTextAlongArc,      drawSpokeLine:drawSpokeLine,

@@ -65,6 +65,11 @@ var Time = (function() {
 		return Time.fromValues(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
 	};
 
+    Time.fromDateUTC = function(date) {
+        date = date || new Date();
+        return Time.fromValues(date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
+    };
+
 	return Time;
 
 })();
