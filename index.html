@@ -47,11 +47,13 @@
 
         var clock = new Clock();
 
+        clock.addEvent("Beer", Time.fromLocalValues(17, 00, 00), null, star);
+        clock.addEvent("Meeting", Time.fromLocalValues(10, 30, 00), Time.fromLocalValues(11, 30, 00));
+
         navigator.geolocation.getCurrentPosition(function (position) {
             clock.setLocation(position.coords.latitude, position.coords.longitude);
         });
 
-        var selection = {x:0, y:0, draw: false};
         var mouseDown = false;
         canvas.onmousedown = function(event) {
             mouseDown = true;
@@ -60,14 +62,13 @@
         canvas.onmouseup = function() {
             mouseDown = false;
             setTimeout(function() {
-                selection.draw = false;
+                clock.showSelection(false);
             }, 1000);
         };
         canvas.onmousemove = function(event) {
             if (mouseDown) {
-                selection.x = event.clientX;
-                selection.y = event.clientY;
-                selection.draw = true;
+                clock.setSelection(event.clientX, event.clientY);
+                clock.showSelection(true);
             }
         };
 
@@ -87,50 +88,7 @@
 
             //g.fillRect(width / 2 - 5, height / 2 - 5, 10, 10);
             // no need to draw every frame.
-            if (selection.draw) {
-                g.save();
-                g.translate(centerX, centerY);
-                var angle = - Math.atan2(selection.x - centerX, selection.y - centerY) + Math.PI / 2;
-                g.strokeStyle = "rgba(0, 0, 0, 0.2)";
-                g.lineWidth = 2;
-                clock.utils.drawSpokeLine(g, 0, longest, angle);
-                var time =  clock.screenAngleToTime(angle);
-                var nuTime = clock.utils.formatFraction(time.valueOf());
-                var oldTime = time.changeTimeZone(0, localTimeZone).toString();
-                g.font = (0.02 * scale) + "px monospace";
-                clock.utils.drawTextAlongArc(g, nuTime, 0, 0, 0.385 * scale, angle);
-                g.textAlign = "right";
-                g.fillStyle = "rgba(0, 0, 0, 0.7)";
-                clock.utils.drawTextAlongArc(g, oldTime, 0, 0, 0.385 * scale, angle);
-                g.restore();
-            }
-            for (var i=0; i < events.length; ++i) {
-                var event = events[i];
-                if (event.time) {
-                    var angle = clock.timeToScreenAngle(event.time);
-                    distanceOut = 0.5 * scale;
-                    var x = distanceOut * Math.cos(angle) + centerX - star.width / 2;
-                    var y = distanceOut * Math.sin(angle) + centerY - star.height / 2;
-                    g.drawImage(star, x, y);
-                }
-                if (event.start) {
-                    var startAngle = clock.timeToScreenAngle(event.start);
-                    var endAngle = clock.timeToScreenAngle(event.end);
-                    g.lineWidth = 6;
-                    g.strokeStyle = "rgba(180, 230, 180, 0.8)";
-                    g.beginPath();
-                    g.arc(centerX, centerY, (0.5 + (i * 0.02)) * scale, startAngle, endAngle);
-                    g.stroke();
-                    var angle = (endAngle - startAngle) / 2 + startAngle;
-                    distanceOut = (0.5 + (i * 0.01)) * scale;
-                    var x = distanceOut * Math.cos(angle) + centerX;
-                    var y = distanceOut * Math.sin(angle) + centerY;
-                }
-                if (event.label) {
-                    var width = g.measureText(event.label).width;
-                    g.fillText(event.label, x - width / 2, y);
-                }
-            }
+
             setTimeout(animate, 100);
         }
 

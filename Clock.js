@@ -14,27 +14,30 @@ var Clock = (function() {
         return Math.floor(millis / (1000 * 60 * 60 * 24));
     }
 
-    function drawTextAlongArc(context, str, centerX, centerY, radius, startAngle){
-        context.save();
-        var measure = context.measureText(str);
+    function drawTextAlongArc(g, str, centerX, centerY, radius, startAngle){
+        g.save();
+        var measure = g.measureText(str);
         var width = measure.width;
         var circumference = 2 * Math.PI * radius;
         var angleSwept = (width / circumference) * 2 * Math.PI;
         var angleIncrement = angleSwept / str.length;
-        if (context.textAlign == "right") {
+        if (g.textAlign == "right") {
             startAngle -= angleSwept;
         }
-        context.translate(centerX, centerY);
-        context.rotate(startAngle + QUARTER_CIRCLE - angleIncrement / 2);
+        g.translate(centerX, centerY);
+        g.rotate(startAngle + QUARTER_CIRCLE - angleIncrement / 2);
+        g.strokeStyle = "white";
+        g.lineWidth = g.lineWidth * 1.9;
         for (var n = 0; n < str.length; n++) {
-            context.rotate(angleIncrement);
-            context.save();
-            context.translate(0, - radius);
+            g.rotate(angleIncrement);
+            g.save();
+            g.translate(0, - radius);
             var char = str[n];
-            context.fillText(char, 0, 0);
-            context.restore();
+            g.strokeText(char, 0, 0);
+            g.fillText(char, 0, 0);
+            g.restore();
         }
-        context.restore();
+        g.restore();
     }
 
     function drawSpokeLine(g, inner, outer, angle) {
@@ -43,6 +46,17 @@ var Clock = (function() {
         g.lineTo(outer * Math.cos(angle), outer * Math.sin(angle));
         g.closePath();
         g.stroke();
+    }
+
+    function sector(g, inner, outer, startAngle, endAngle) {
+        g.beginPath();
+        g.moveTo(inner * Math.cos(startAngle), inner * Math.sin(startAngle));
+        g.lineTo(outer * Math.cos(startAngle), outer * Math.sin(startAngle));
+        g.arc(0, 0, outer, startAngle, endAngle, false);
+        g.lineTo(inner * Math.cos(endAngle), inner * Math.sin(endAngle));
+        g.arc(0, 0, inner, endAngle, startAngle, true);
+        g.closePath();
+        return g;
     }
 
     function spokes(g, radius, innerRadius, startAngle, number) {
@@ -97,7 +111,16 @@ var Clock = (function() {
         this.offsetProportion = (now.getTimezoneOffset() + (isDST(now) ? 60 : 0))/ (24 * 60);
         this.rise = 0.25 + this.offsetProportion;
         this.set = 0.75 + this.offsetProportion;
+        this.selection = {show: false, x: NaN, y: NaN};
+        this.events = [];
     }
+
+    Clock.Event = function(name, startTime, endTime, image) {
+        this.name = name;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.image = image;
+    };
 
     Clock.prototype = {
         drawFace: function drawFace(g, scale) {
@@ -178,18 +201,10 @@ var Clock = (function() {
             g.fill();
         },
 
-        render: function render(g, centerX, centerY, scale) {
-            g.save();
-            g.translate(centerX + scale / 2, centerY + scale / 2);
-            var zeroAngle = this.offsetProportion * FULL_CIRCLE + QUARTER_CIRCLE;
-            this.drawFace(g, scale);
-            this.drawNightPeriod(g, scale);
-
+        drawDays:function (g, scale, zeroAngle, localTime) {
             g.font = (3 * scale / 100) + "px monospace";
-
-            var localTime = new Date();
             var yearDay = dayOfUTCYear(localTime);
-            var today  = NEW_DAYS[yearDay % 10];
+            var today = NEW_DAYS[yearDay % 10];
             g.textAlign = "right";
             g.fillStyle = "black";
             drawTextAlongArc(g, today.toUpperCase(), 0, 0, 0.46 * scale, zeroAngle);
@@ -197,17 +212,17 @@ var Clock = (function() {
 
             var legacyWeekDay = localTime.getDay();
             var legacyToday = LEGACY_DAYS[legacyWeekDay % 7];
-            var tzProportion = (localTime.getTimezoneOffset())/ (24 * 60);
+            var tzProportion = (localTime.getTimezoneOffset()) / (24 * 60);
 
             g.textAlign = "right";
-            drawTextAlongArc(g, legacyToday.toUpperCase(), 0, 0, 0.42 * scale, zeroAngle + tzProportion * FULL_CIRCLE );
+            drawTextAlongArc(g, legacyToday.toUpperCase(), 0, 0, 0.42 * scale, zeroAngle + tzProportion * FULL_CIRCLE);
             drawSpokeLine(g, OUTER_CIRCLE * scale, 0.44 * scale, zeroAngle + tzProportion * FULL_CIRCLE);
 
             g.font = (3 * scale / 100) + "px monospace";
 
             g.textAlign = "left";
-            g.fillStyle= "black";
-            var mon =  Math.floor(yearDay / 10);
+            g.fillStyle = "black";
+            var mon = Math.floor(yearDay / 10);
             if (mon % 10 == 1) {
                 mon = mon + "st ";
             } else if (mon % 10 == 2) {
@@ -217,14 +232,77 @@ var Clock = (function() {
             } else {
                 mon = mon + "th ";
             }
-            g.fillText( mon+today, -0.475 * scale, 0.46 * scale);
+            g.fillText(mon + today, -0.475 * scale, 0.46 * scale);
             g.fillText(legacyToday, 0.25 * scale, 0.46 * scale);
-
-            this.drawHands(g, scale, localTime);
+            return localTime;
+        },
+        drawInnerCircle:function (scale, g) {
             circle(0.01 * scale);
             g.fillStyle = "rgb(90, 90, 230)";
             g.fill();
+        },
+        drawSelection:function (g, x, y, scale) {
+            var angle = -Math.atan2(this.selection.x - (x + scale / 2), this.selection.y - (y + scale / 2)) + Math.PI / 2;
+            g.strokeStyle = "rgba(0, 0, 0, 0.2)";
+            g.lineWidth = 2;
+            drawSpokeLine(g, 0, scale * 2, angle);
+            var time = this.screenAngleToTime(angle);
+            var nuTime = formatFraction(time.valueOf());
+            var oldTime = time.changeTimeZone(0, localTimeZone).toString();
+            g.font = (0.02 * scale) + "px monospace";
+            drawTextAlongArc(g, nuTime, 0, 0, 0.385 * scale, angle);
+            g.textAlign = "right";
+            g.fillStyle = "rgba(0, 0, 0, 0.7)";
+            drawTextAlongArc(g, oldTime, 0, 0, 0.385 * scale, angle);
+        },
+        drawEvents:function (g, scale) {
+            for (var i = 0; i < this.events.length; ++i) {
+                var distanceOut, x, y;
+                var event = this.events[i];
+                if (event.image != null) {
+                    var angle = this.timeToScreenAngle(event.startTime);
+                    distanceOut = 0.4 * scale;
+                    x = distanceOut * Math.cos(angle) - event.image.width / 2;
+                    y = distanceOut * Math.sin(angle) - event.image.height / 2;
+                    g.drawImage(event.image, x, y);
+                }
+                if (event.startTime && event.endTime) {
+                    var startAngle = this.timeToScreenAngle(event.startTime);
+                    var endAngle = this.timeToScreenAngle(event.endTime);
+                    g.fillStyle = ["rgba(180, 230, 180, 0.7)", "rgba(180, 230, 180, 0.7)"][ i % 2];
+                    sector(g, 0.22 * scale, 0.31 * scale, startAngle, endAngle).fill();
+                    var angle = (endAngle - startAngle) / 2 + startAngle;
+                    distanceOut = 0.18 * scale;
+                    x = distanceOut * Math.cos(angle);
+                    y = distanceOut * Math.sin(angle);
+                }
+                if (event.name) {
+                    g.font = (2.5 * scale / 100) + "px serif";
+                    g.textAlign = "left";
+                    g.fillStyle = "black";
+                    var width = g.measureText(event.name).width;
+                    g.fillText(event.name, x - width / 2, y);
+                }
+            }
+        },
+        render: function render(g, x, y, scale) {
+            var localTime = new Date();
+            var zeroAngle = this.offsetProportion * FULL_CIRCLE + QUARTER_CIRCLE;
+            g.save();
+            g.translate(x + scale / 2, y + scale / 2);
+            this.drawFace(g, scale);
+            this.drawNightPeriod(g, scale);
+            this.drawEvents(g, scale);
+            this.drawDays(g, scale, zeroAngle, localTime);
+            this.drawInnerCircle(scale, g);
+            if (this.selection.show) {
+                this.drawSelection(g, x, y, scale);
+            }
+            this.drawHands(g, scale, localTime);
             g.restore();
+        },
+        addEvent: function addEvent(name, start, end, image) {
+            this.events.push(new Clock.Event(name, start, end, image));
         },
         setLocation: function setPosition(lat, long) {
             var sp = new SolarPosition(
@@ -245,9 +323,17 @@ var Clock = (function() {
         timeToScreenAngle: function timeToScreenAngle(time) {
            return (time.valueOf() + this.offsetProportion) * FULL_CIRCLE + QUARTER_CIRCLE;
         },
+        showSelection: function(showSelection) {
+            if (showSelection === undefined) showSelection = true;
+            this.selection.show = showSelection;
+        },
+        setSelection: function(x, y) {
+            this.selection.x = x;
+            this.selection.y = y;
+        },
         utils: {
-            dayOfYear:dayOfUTCYear,   drawTextAlongArc:drawTextAlongArc,      drawSpokeLine:drawSpokeLine,
-            label:label, circle:circle,   isDST:isDST, formatFraction: formatFraction
+            dayOfYear:dayOfUTCYear, drawTextAlongArc:drawTextAlongArc, drawSpokeLine:drawSpokeLine,
+            label:label, circle:circle,   isDST:isDST, formatFraction: formatFraction, sector:sector
         }
     };
 

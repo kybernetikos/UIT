@@ -56,7 +56,13 @@ var Time = (function() {
 		return new Time(((hour || 0) + ((minute || 0) + ((second || 0)+ (millisecond || 0) / 1000) / 60) / 60) / 24);
 	};
 
-	Time.fromHMS = function(hms) {
+    Time.fromLocalValues = function(hour, minute, second, millisecond) {
+        var today = new Date();
+        today.setHours(hour || 0, minute || 0, second || 0, millisecond || 0);
+        return Time.fromDateUTC(today);
+    };
+
+    Time.fromHMS = function(hms) {
 		return Time.fromValues(hms.hour, hms.minute, hms.second, hms.millisecond);
 	};
 
