@@ -47,8 +47,8 @@
 
         var clock = new Clock();
 
-        clock.addEvent("Beer", Time.fromLocalValues(17, 00, 00), null, star);
-        clock.addEvent("Meeting", Time.fromLocalValues(10, 30, 00), Time.fromLocalValues(11, 30, 00));
+        // clock.addEvent("Beer", Time.fromLocalValues(17, 00, 00), null, star);
+        // clock.addEvent("Meeting", Time.fromLocalValues(10, 30, 00), Time.fromLocalValues(11, 30, 00));
 
         navigator.geolocation.getCurrentPosition(function (position) {
             clock.setLocation(position.coords.latitude, position.coords.longitude);
