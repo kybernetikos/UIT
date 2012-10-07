@@ -7,12 +7,76 @@ var Clock = (function() {
 
     var OUTER_CIRCLE = 0.4015;
 
+    function isDST(today) {
+        // thanks to http://www.mresoftware.com/simpleDST.htm
+        today = today || new Date();
+        var year = today.getFullYear();
+        var january = new Date(year, 0);	// January 1 local
+        var july = new Date(year, 6);	// July 1 local
+        // northern hemisphere test
+        if (january.getTimezoneOffset() > july.getTimezoneOffset() && today.getTimezoneOffset() != january.getTimezoneOffset()){
+            return true;
+        }
+        // southern hemisphere test
+        if (january.getTimezoneOffset() < july.getTimezoneOffset() && today.getTimezoneOffset() != july.getTimezoneOffset()){
+            return true;
+        }
+        return false;
+    }
+
     function dayOfUTCYear(date) {
         date = date || new Date();
         var yearStart = Date.UTC(date.getUTCFullYear(), 0, 1, 0, 0, 0);
         var millis = date.getTime() - yearStart;
         return Math.floor(millis / (1000 * 60 * 60 * 24));
     }
+
+    function formatFraction(timeFraction) {
+        var mss = pad(Math.floor(timeFraction * (10 * 100 * 100 * 1000)), 8);
+        mss = mss.substring(mss.length - 8);
+        mss = "." + mss.substring(0, 1) + ":" + mss.substring(1, 3) + ":" + mss.substring(3, 5) + ":" + mss.substring(5);
+        return mss;
+    }
+
+    function pad(str, desiredLength, paddingChar, after) {
+        after = Boolean(after);
+        if (paddingChar == null) paddingChar = "0"; else paddingChar = paddingChar.toString();
+        desiredLength = desiredLength || 2;
+        str = str.toString();
+        var missingChars = desiredLength - str.length;
+        var padding = "";
+        for (var i = 0; i < missingChars; ++i) {
+            padding += paddingChar;
+        }
+        return (after ? str : "") + padding + (after ? "" : str);
+    };
+
+    function spokeLine(g, inner, outer, angle) {
+        g.beginPath();
+        g.moveTo(inner * Math.cos(angle), inner * Math.sin(angle));
+        g.lineTo(outer * Math.cos(angle), outer * Math.sin(angle));
+        g.closePath();
+        return g;
+    }
+
+    function circle(radius) {
+        g.beginPath();
+        g.arc(0, 0, radius, 0, Math.PI * 2, true);
+        g.closePath();
+        return g;
+    }
+
+    function sector(g, inner, outer, startAngle, endAngle) {
+        g.beginPath();
+        g.moveTo(inner * Math.cos(startAngle), inner * Math.sin(startAngle));
+        g.lineTo(outer * Math.cos(startAngle), outer * Math.sin(startAngle));
+        g.arc(0, 0, outer, startAngle, endAngle, false);
+        g.lineTo(inner * Math.cos(endAngle), inner * Math.sin(endAngle));
+        g.arc(0, 0, inner, endAngle, startAngle, true);
+        g.closePath();
+        return g;
+    }
+
 
     function drawTextAlongArc(g, str, centerX, centerY, radius, startAngle){
         g.save();
@@ -40,69 +104,19 @@ var Clock = (function() {
         g.restore();
     }
 
-    function drawSpokeLine(g, inner, outer, angle) {
-        g.beginPath();
-        g.moveTo(inner * Math.cos(angle), inner * Math.sin(angle));
-        g.lineTo(outer * Math.cos(angle), outer * Math.sin(angle));
-        g.closePath();
-        g.stroke();
-    }
-
-    function sector(g, inner, outer, startAngle, endAngle) {
-        g.beginPath();
-        g.moveTo(inner * Math.cos(startAngle), inner * Math.sin(startAngle));
-        g.lineTo(outer * Math.cos(startAngle), outer * Math.sin(startAngle));
-        g.arc(0, 0, outer, startAngle, endAngle, false);
-        g.lineTo(inner * Math.cos(endAngle), inner * Math.sin(endAngle));
-        g.arc(0, 0, inner, endAngle, startAngle, true);
-        g.closePath();
-        return g;
-    }
-
-    function spokes(g, radius, innerRadius, startAngle, number) {
+    function drawSpokes(g, radius, innerRadius, startAngle, number) {
         for (var theta = 0; theta < Math.PI * 2; theta += (Math.PI * 2 / number)) {
-            drawSpokeLine(g, innerRadius, radius, theta + startAngle);
+            spokeLine(g, innerRadius, radius, theta + startAngle).stroke();
         }
     }
 
-    function label(g, radius, startAngle, labels, scale) {
+    function drawLabels(g, radius, startAngle, labels, scale) {
         for (var i = 0; i < labels.length; ++i) {
             var theta = startAngle + i * (Math.PI * 2 / labels.length);
             var y = radius * Math.sin(theta);
             g.fillText(labels[i], radius * Math.cos(theta), y);
             g.strokeText(labels[i], radius * Math.cos(theta), y);
         }
-    }
-
-    function circle(radius) {
-        g.beginPath();
-        g.arc(0, 0, radius, 0, Math.PI * 2, true);
-        g.closePath();
-        g.stroke();
-    }
-
-    function isDST(today) {
-        // thanks to http://www.mresoftware.com/simpleDST.htm
-        today = today || new Date();
-        var year = today.getFullYear();
-        var january = new Date(year, 0);	// January 1 local
-        var july = new Date(year, 6);	// July 1 local
-        // northern hemisphere test
-        if (january.getTimezoneOffset() > july.getTimezoneOffset() && today.getTimezoneOffset() != january.getTimezoneOffset()){
-            return true;
-        }
-        // southern hemisphere test
-        if (january.getTimezoneOffset() < july.getTimezoneOffset() && today.getTimezoneOffset() != july.getTimezoneOffset()){
-            return true;
-        }
-        return false;
-    }
-
-    function formatFraction(timeFraction) {
-        var mss = "00000000" + Math.floor(timeFraction * (10 * 100 * 100 * 1000));
-        mss = mss.substring(mss.length - 8);
-        mss = "." + mss.substring(0, 1) + ":" + mss.substring(1, 3) + ":" + mss.substring(3, 5) + ":" + mss.substring(5);
-        return mss;
     }
 
     function Clock() {
@@ -127,17 +141,17 @@ var Clock = (function() {
             var zeroAngle = this.offsetProportion * FULL_CIRCLE + QUARTER_CIRCLE;
             g.strokeStyle = "rgb(200, 200, 200)";
             g.lineWidth = 0.05 * scale / 100;
-            spokes(g, OUTER_CIRCLE * scale, 0.25 * scale, zeroAngle, 100);
+            drawSpokes(g, OUTER_CIRCLE * scale, 0.25 * scale, zeroAngle, 100);
             g.lineWidth = 0.1 * scale / 100;
-            circle(0.38 * scale);
-            spokes(g, OUTER_CIRCLE * scale, 0.10 * scale,  zeroAngle, 20);
+            circle(0.38 * scale).stroke();
+            drawSpokes(g, OUTER_CIRCLE * scale, 0.10 * scale,  zeroAngle, 20);
             g.lineWidth = 0.25 * scale / 100;
-            circle(0.05 * scale);
-            circle(OUTER_CIRCLE * scale);
-            spokes(g, OUTER_CIRCLE * scale, 0.05 * scale, zeroAngle, 10);
+            circle(0.05 * scale).stroke();
+            circle(OUTER_CIRCLE * scale).stroke();
+            drawSpokes(g, OUTER_CIRCLE * scale, 0.05 * scale, zeroAngle, 10);
 
-            drawSpokeLine(g, 0, 0.05 * scale, QUARTER_CIRCLE);
-            drawSpokeLine(g, 0, 0.05 * scale, 3 * QUARTER_CIRCLE);
+            spokeLine(g, 0, 0.05 * scale, QUARTER_CIRCLE).stroke();
+            spokeLine(g, 0, 0.05 * scale, 3 * QUARTER_CIRCLE).stroke();
 
             g.font = (7.5 * scale / 100) + "px serif";
             g.textBaseline = "middle";
@@ -146,10 +160,10 @@ var Clock = (function() {
             g.strokeStyle = "rgb(255, 255, 255)";
             g.lineWidth = 2 * scale / 100;
             // label(g, 90, offset, ["O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]);
-            label(g, 0.35 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
+            drawLabels(g, 0.35 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
             g.strokeStyle = "rgb(100, 100, 100)";
             g.lineWidth = 0.25 * scale / 100;
-            label(g, 0.35 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
+            drawLabels(g, 0.35 * scale, zeroAngle, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], scale);
         },
 
         drawHands: function drawHands(g, scale, date) {
@@ -165,29 +179,29 @@ var Clock = (function() {
             angle = (secSection * FULL_CIRCLE) + zeroAngle;
             g.strokeStyle = "rgb(230, 90, 90)";
             g.lineWidth = 0.5 * scale / 100;
-            drawSpokeLine(g, 0, OUTER_CIRCLE * scale, angle);
+            spokeLine(g, 0, OUTER_CIRCLE * scale, angle).stroke();
             g.lineWidth = 1.5 * scale / 100;
-            drawSpokeLine(g, 0.325 * scale, OUTER_CIRCLE * scale, angle);
+            spokeLine(g, 0.325 * scale, OUTER_CIRCLE * scale, angle).stroke();
 
             var minSection = timeFraction * 10 - Math.floor(timeFraction * 10);
             minSection = Math.floor(minSection * 100) / 100;
             angle = (minSection * FULL_CIRCLE) + zeroAngle;
             g.strokeStyle = "rgb(90, 230, 90)";
             g.lineWidth = 1.5 * scale / 100;
-            drawSpokeLine(g, 0.275 * scale, 0.325 * scale, angle);
+            spokeLine(g, 0.275 * scale, 0.325 * scale, angle).stroke();
             g.lineWidth = 0.5 * scale / 100;
-            drawSpokeLine(g, 0, 0.325 * scale, angle);
+            spokeLine(g, 0, 0.325 * scale, angle).stroke();
 
             g.strokeStyle = "rgb(90, 90, 230)";
             g.lineWidth = 1.5 * scale / 100;
             angle = (timeFraction * FULL_CIRCLE) + zeroAngle;
-            drawSpokeLine(g, 0, 0.275 * scale, angle);
+            spokeLine(g, 0, 0.275 * scale, angle).stroke();
 
             g.font = (3 * scale / 100) + "px monospace";
             g.textAlign = "left";
             g.fillStyle= "black";
-            g.fillText(formatFraction(timeFraction), -0.475 * scale, 0.49 * scale);
-            g.fillText(localTime.toString(), 0.25 * scale, 0.49 * scale);
+            g.fillText(formatFraction(timeFraction), -0.475 * scale, -0.48 * scale);
+            g.fillText(localTime.toString(), 0.25 * scale, -0.48 * scale);
         },
 
         drawNightPeriod:function(g, scale) {
@@ -208,7 +222,7 @@ var Clock = (function() {
             g.textAlign = "right";
             g.fillStyle = "black";
             drawTextAlongArc(g, today.toUpperCase(), 0, 0, 0.46 * scale, zeroAngle);
-            drawSpokeLine(g, 0.44 * scale, 0.48 * scale, zeroAngle);
+            spokeLine(g, 0.44 * scale, 0.48 * scale, zeroAngle).stroke();
 
             var legacyWeekDay = localTime.getDay();
             var legacyToday = LEGACY_DAYS[legacyWeekDay % 7];
@@ -216,7 +230,7 @@ var Clock = (function() {
 
             g.textAlign = "right";
             drawTextAlongArc(g, legacyToday.toUpperCase(), 0, 0, 0.42 * scale, zeroAngle + tzProportion * FULL_CIRCLE);
-            drawSpokeLine(g, OUTER_CIRCLE * scale, 0.44 * scale, zeroAngle + tzProportion * FULL_CIRCLE);
+            spokeLine(g, OUTER_CIRCLE * scale, 0.44 * scale, zeroAngle + tzProportion * FULL_CIRCLE).stroke();
 
             g.font = (3 * scale / 100) + "px monospace";
 
@@ -232,12 +246,12 @@ var Clock = (function() {
             } else {
                 mon = mon + "th ";
             }
-            g.fillText(mon + today, -0.475 * scale, 0.46 * scale);
-            g.fillText(legacyToday, 0.25 * scale, 0.46 * scale);
+            g.fillText(mon + today, -0.475 * scale, -0.45 * scale);
+            g.fillText(legacyToday, 0.25 * scale, -0.45 * scale);
             return localTime;
         },
         drawInnerCircle:function (scale, g) {
-            circle(0.01 * scale);
+            circle(0.01 * scale).stroke();
             g.fillStyle = "rgb(90, 90, 230)";
             g.fill();
         },
@@ -245,15 +259,15 @@ var Clock = (function() {
             var angle = -Math.atan2(this.selection.x - (x + scale / 2), this.selection.y - (y + scale / 2)) + Math.PI / 2;
             g.strokeStyle = "rgba(0, 0, 0, 0.2)";
             g.lineWidth = 2;
-            drawSpokeLine(g, 0, scale * 2, angle);
+            spokeLine(g, 0, scale * 2, angle).stroke();
             var time = this.screenAngleToTime(angle);
             var nuTime = formatFraction(time.valueOf());
             var oldTime = time.changeTimeZone(0, localTimeZone).toString();
             g.font = (0.02 * scale) + "px monospace";
-            drawTextAlongArc(g, nuTime, 0, 0, 0.385 * scale, angle);
+            drawTextAlongArc(g, nuTime, 0, 0, 0.3885 * scale, angle);
             g.textAlign = "right";
             g.fillStyle = "rgba(0, 0, 0, 0.7)";
-            drawTextAlongArc(g, oldTime, 0, 0, 0.385 * scale, angle);
+            drawTextAlongArc(g, oldTime, 0, 0, 0.3885 * scale, angle);
         },
         drawEvents:function (g, scale) {
             for (var i = 0; i < this.events.length; ++i) {
@@ -269,15 +283,16 @@ var Clock = (function() {
                 if (event.startTime && event.endTime) {
                     var startAngle = this.timeToScreenAngle(event.startTime);
                     var endAngle = this.timeToScreenAngle(event.endTime);
-                    g.fillStyle = ["rgba(180, 230, 180, 0.7)", "rgba(180, 230, 180, 0.7)"][ i % 2];
-                    sector(g, 0.22 * scale, 0.31 * scale, startAngle, endAngle).fill();
+                    g.fillStyle = ["rgba(230, 180, 180, 0.7)", "rgba(180, 230, 180, 0.7)", "rgba(180, 180, 230, 0.7)"][ i % 3];
+                    var minOut = 0.25;
+                    sector(g, (minOut + (i * 0.015)) * scale, (minOut + 0.04 + i * 0.015) * scale, startAngle, endAngle).fill();
                     var angle = (endAngle - startAngle) / 2 + startAngle;
-                    distanceOut = 0.18 * scale;
+                    distanceOut = (minOut + 0.01 + (i * 0.015)) * scale;
                     x = distanceOut * Math.cos(angle);
                     y = distanceOut * Math.sin(angle);
                 }
                 if (event.name) {
-                    g.font = (2.5 * scale / 100) + "px serif";
+                    g.font = (2.15 * scale / 100) + "px sans-serif";
                     g.textAlign = "left";
                     g.fillStyle = "black";
                     var width = g.measureText(event.name).width;
@@ -303,6 +318,9 @@ var Clock = (function() {
         },
         addEvent: function addEvent(name, start, end, image) {
             this.events.push(new Clock.Event(name, start, end, image));
+        },
+        clearEvents: function() {
+            this.events = [];
         },
         setLocation: function setPosition(lat, long) {
             var sp = new SolarPosition(
@@ -332,8 +350,8 @@ var Clock = (function() {
             this.selection.y = y;
         },
         utils: {
-            dayOfYear:dayOfUTCYear, drawTextAlongArc:drawTextAlongArc, drawSpokeLine:drawSpokeLine,
-            label:label, circle:circle,   isDST:isDST, formatFraction: formatFraction, sector:sector
+            dayOfYear:dayOfUTCYear, drawTextAlongArc:drawTextAlongArc, drawSpokeLine:spokeLine, pad:pad,
+            label:drawLabels, circle:circle,   isDST:isDST, formatFraction: formatFraction, sector:sector
         }
     };
 

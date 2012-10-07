@@ -14,6 +14,9 @@
     <script src="solar/SolarPosition.js"></script>
     <script src="Clock.js"></script>
 
+    <script src="Emitter.js"></script>
+    <script src="Promise.js"></script>
+
     <style>
         * {
             margin: 0px;
@@ -30,8 +33,8 @@
     </style>
 </head>
 <body>
+    <button style='display: none; height: 100px;' id="calendarButton" onclick="attemptToAuthorise()">Connect to Google Calendar</button>
     <canvas id="display"></canvas>
-
     <script type="text/javascript">
         var star = new Image();
         star.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAACy0lEQVR42s2VXUhTYRjHX5msSNKyTIPIBJWwLgRTsCDSmywjUgwyLIU+tFqtoky6sFRCoyx1assobIiGyVJLMSsdxqYommlLxwKVCEOQpAv3np33+O8J76TEyUZd/HngcPj9nvd5zgcD4NH8XwIxejFGfDof6znBiNYghjUGjwgU2+Ug8fmCJIbOSqL/dJDbBdR9rjJRC2WsGqLvZK5bBQRX0+wn8e0Z8PUp5O6MSbkrTe02Ac39qGLXEVwPjJdCGSqA3HHkmPsEH7Isc+MEHysCvuRjzlYIuT3F4pKAIBoxmCXE4BnMJwtiIBOi/xQUW/k83HYdGLlCyYbozYazKRHOhj2Q6qIhGSIgPQmG9ChQcP1azR9PQMtLoEzPTTQCPz8CM/3Aj16CVwKjOYD1EjCkAUgO6zXgexMwaaRqhLCcA3+4fppX+CQsOiLZkh4qm9PtyjAB7XnU7VWCaYHh3+BMYOAE0JcG9KQAlgNUEyG3xIC6tnPditAl7UDuTPWnJZpETwZBjwO9h4HuJMB8EOjaC3TuBt5FU42EbAwHf+Bn4mXe/i4t2dmWrHK2HtIp5lSCJwPv9wGmOALHAu2RlAiIZoJXrtbxMpVqWU+Rs3F/pPyKwGbqumMn8CYKaIsAWrYAr4PhfLwGvNSLbGDLE9TvKlbexhE8hoDbgNYw4OUmoGkd0OwH8dwX/C4rWZZAqotSSTXbp2CKpq7DSBBCdTN1H0hwH6DBi0RqOIrYlOMWU7kuqA5Nkl/soJmHA+3BkOsDQbOe4ffZjFzjTXAGNDI4qxgcBSzJdUHVBqNo20qL3Egv0Erwe8xA4whw3KYUMoOkYxC1lHoS3GRGlwRc7x/AK1ZJcq0vCGzld1j8wnsc+SyewFanngQ3mEQJWLqgfKWWl7BZXsxyqOO/fjUJqqbkUGYp2qULSr3yCB6y8PoiohBK3j/76Xs0vwCREourrc6evAAAAABJRU5ErkJggg==";
@@ -41,18 +44,23 @@
 
         window.onresize = function() {
             canvas.setAttribute("width", document.body.clientWidth);
-            canvas.setAttribute("height", document.body.clientHeight);
+            canvas.setAttribute("height", document.body.clientHeight - canvas.offsetTop);
         };
         window.onresize();
 
-        var clock = new Clock();
+        var localTimeZone = new Date().getTimezoneOffset() / -60;
 
-        // clock.addEvent("Beer", Time.fromLocalValues(17, 00, 00), null, star);
-        // clock.addEvent("Meeting", Time.fromLocalValues(10, 30, 00), Time.fromLocalValues(11, 30, 00));
+        var clock = new Clock();
 
         navigator.geolocation.getCurrentPosition(function (position) {
             clock.setLocation(position.coords.latitude, position.coords.longitude);
         });
+
+        function timedHideSelection() {
+            setTimeout(function() {
+                clock.showSelection(false);
+            }, 1000);
+        }
 
         var mouseDown = false;
         canvas.onmousedown = function(event) {
@@ -61,9 +69,7 @@
         };
         canvas.onmouseup = function() {
             mouseDown = false;
-            setTimeout(function() {
-                clock.showSelection(false);
-            }, 1000);
+            timedHideSelection();
         };
         canvas.onmousemove = function(event) {
             if (mouseDown) {
@@ -72,8 +78,25 @@
             }
         };
 
-        var localTimeZone = new Date().getTimezoneOffset() / -60;
-        var events = [];
+        canvas.addEventListener("touchstart", function(evt) {
+            evt.preventDefault();
+            var touch = evt.changedTouches[evt.changedTouches.length - 1];
+            clock.setSelection(touch.clientX, touch.clientY);
+            clock.showSelection(true);
+        }, false);
+        canvas.addEventListener("touchend", function (evt) {
+            evt.preventDefault();
+            if (evt.touches.length == 0) {
+                timedHideSelection();
+            }
+        }, false);
+        canvas.addEventListener("touchmove", function(evt) {
+            evt.preventDefault();
+            var touch = evt.changedTouches[evt.changedTouches.length - 1];
+            clock.setSelection(touch.clientX, touch.clientY);
+            clock.showSelection(true);
+        }, false);
+
         function render() {
             var width = Number(canvas.getAttribute("width"));
             var height = Number(canvas.getAttribute("height"));
@@ -86,15 +109,119 @@
 
             clock.render(g, centerX - scale / 2, centerY - scale / 2, scale);
 
-            //g.fillRect(width / 2 - 5, height / 2 - 5, 10, 10);
-            // no need to draw every frame.
-
-            setTimeout(animate, 100);
+            // could just call animate, but that ends up using much more
+            // CPU than we need.
+            setTimeout(animate, 70);
         }
 
         var reqFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
         var animate = reqFrame.bind(null, render, canvas);
         animate();
+
+    </script>
+
+    <script>
+        var clientId = '490794305809.apps.googleusercontent.com';
+        var apiKey = 'AIzaSyCqrIyAQnyZV5JwP7KLTI49ki9HRQpUzNk';
+        var scopes = 'https://www.googleapis.com/auth/calendar';
+
+        var authorized = new Promise();
+
+        function attemptToAuthoriseOnLoad() {
+            function handleAuthResult(authResult) {
+                if (authResult) {
+                    authorized.resolve();
+                } else {
+                    var button = document.getElementById('calendarButton');
+                    button.style.display = '';
+                    window.onresize();
+                }
+            }
+
+            function checkAuth() {
+                gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
+            }
+
+            gapi.client.setApiKey(apiKey);
+            window.setTimeout(checkAuth,1);
+            checkAuth();
+        }
+
+        function attemptToAuthorise() {
+            gapi.auth.authorize( {client_id: clientId, scope: scopes, immediate: false}, function(authResult) {
+                var button = document.getElementById('calendarButton');
+                button.style.display = 'none';
+                window.onresize();
+                if (authResult) {
+                    authorized.resolve();
+                } else {
+                    alert('Unable to authenticate with Google Calendar');
+                }
+            });
+            return false;
+        }
+
+        var loadApi = function(apiName, apiVersion) {
+            return function() {
+                var result = new Promise();
+                gapi.client.load(apiName, apiVersion, result.resolver);
+                return result;
+            };
+        };
+
+        var request = function(thingToRequest) {
+            return function() {
+                var thisRequest = typeof thingToRequest == 'function' ? thingToRequest.apply(null, arguments) : thingToRequest;
+                if (Array.isArray(thisRequest)) {
+                    var individualRequests = [];
+                    for (var i = 0; i < thisRequest.length; ++i) {
+                        individualRequests[i] = request(thisRequest[i])();
+                    }
+                    return Promise.all.apply(Promise, individualRequests);
+                }
+                var result = new Promise();
+                thisRequest.execute(result.resolver);
+                return result;
+            };
+        }
+
+    </script>
+    <script src="https://apis.google.com/js/client.js?onload=attemptToAuthoriseOnLoad"></script>
+    <script>
+        var calendar = authorized.then(loadApi('calendar', 'v3'));
+        calendar.then(request(function() {
+            return gapi.client.calendar.calendarList.list();
+        })).then(request(function(allCalendars) {
+            function listEvents(id, timeStart, timeEnd) {
+                return gapi.client.calendar.events.list({
+                    'calendarId': id,
+                    'timeMin': timeStart,
+                    'timeMax': timeEnd
+                });
+            }
+            var calendarEntries = [];
+            var date = new Date();
+            date.setHours(0, 0, 0, 0);
+            var end = new Date(date.getTime());
+            end.setHours(23, 59, 59, 999);
+            for (var i = 0; i < allCalendars.items.length; ++i) {
+                var id = allCalendars.items[i].id;
+                calendarEntries[i] = listEvents(id, date.toISOString(), end.toISOString());
+            }
+            return calendarEntries;
+        })).then(function() {
+            for (var j = 0; j < arguments.length; ++j) {
+                var events = arguments[j][0];
+                for (var i = 0; events.items && i < events.items.length; i++) {
+                    var event = events.items[i];
+                    var summary = event.summary;
+                    var start = Time.fromDateUTC(new Date(Date.parse(event.start.dateTime || event.start.date)));
+                    var end = Time.fromDateUTC(new Date(Date.parse(event.end.dateTime || event.end.date)));
+                    if (end == start) end = null;
+                    clock.addEvent(summary, start, end, star);
+                }
+            };
+        });
 
     </script>
 </body>
