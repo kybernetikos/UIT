@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="238324e5-6997-4584-928f-322819056ab7" name="Default" comment="add icon and comment out event testing code">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Emitter.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Promise.js" />
+    <list default="true" id="238324e5-6997-4584-928f-322819056ab7" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Clock.js" afterPath="$PROJECT_DIR$/Clock.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
     </list>
     <ignored path="Clock.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Dummy.txt" changelist="238324e5-6997-4584-928f-322819056ab7" time="1349648302671" ignored="false" />
+    <file path="/Dummy.txt" changelist="238324e5-6997-4584-928f-322819056ab7" time="1349648327203" ignored="false" />
     <file path="/index.html" changelist="238324e5-6997-4584-928f-322819056ab7" time="1349647250309" ignored="false" />
     <file path="/Clock.js" changelist="238324e5-6997-4584-928f-322819056ab7" time="1349643080531" ignored="false" />
     <file path="/Time.js" changelist="238324e5-6997-4584-928f-322819056ab7" time="1349642249152" ignored="false" />
@@ -90,8 +87,8 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Emitter.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Emitter.js">
+      <file leaf-file-name="emitter.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/emitter.js">
           <provider selected="true" editor-type-id="text-editor">
             <state line="23" column="26" selection-start="1341" selection-end="1341" vertical-scroll-proportion="0.0">
               <folding />
@@ -108,8 +105,8 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Promise.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Promise.js">
+      <file leaf-file-name="promise.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/promise.js">
           <provider selected="true" editor-type-id="text-editor">
             <state line="190" column="35" selection-start="5790" selection-end="5790" vertical-scroll-proportion="0.0">
               <folding />
@@ -452,7 +449,11 @@
       <created>1348133660363</created>
       <updated>1348133660363</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Added google calendar integration">
+      <created>1349648334295</created>
+      <updated>1349648334295</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -471,6 +472,7 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -479,7 +481,6 @@
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
@@ -520,7 +521,7 @@
     <option name="SHOW_DIRTY_RECURSIVELY" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="add icon and comment out event testing code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added google calendar integration" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -540,6 +541,7 @@
     <MESSAGE value="Started the implementation of events / alarms.  Moved the coordinate system so that the clock can be rendered with a side length and an x,y/  Improved the placement of the labels." />
     <MESSAGE value="Refactored event and selection code into the clock code." />
     <MESSAGE value="add icon and comment out event testing code" />
+    <MESSAGE value="Added google calendar integration" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -601,7 +603,7 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Emitter.js">
+    <entry file="file://$PROJECT_DIR$/emitter.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="23" column="26" selection-start="1341" selection-end="1341" vertical-scroll-proportion="0.0">
           <folding />
@@ -622,7 +624,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Promise.js">
+    <entry file="file://$PROJECT_DIR$/promise.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="190" column="35" selection-start="5790" selection-end="5790" vertical-scroll-proportion="0.0">
           <folding />
