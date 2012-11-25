@@ -88,19 +88,19 @@
             }
         };
 
-        document.addEventListener("touchstart", function(evt) {
+        canvas.addEventListener("touchstart", function(evt) {
             evt.preventDefault();
             var touch = evt.changedTouches[evt.changedTouches.length - 1];
             clock.setSelection(touch.clientX, touch.clientY);
             clock.showSelection(true);
         }, false);
-        document.addEventListener("touchend", function (evt) {
+        canvas.addEventListener("touchend", function (evt) {
             evt.preventDefault();
             if (evt.touches.length == 0) {
                 timedHideSelection();
             }
         }, false);
-        document.addEventListener("touchmove", function(evt) {
+        canvas.addEventListener("touchmove", function(evt) {
             evt.preventDefault();
             var touch = evt.changedTouches[evt.changedTouches.length - 1];
             clock.setSelection(touch.clientX, touch.clientY);
