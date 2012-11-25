@@ -4,10 +4,9 @@
     <title>UIT - A Universal Decimal Time</title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
-    <link rel="apple-touch-icon" href="images/icon_64.png" />
-    <link rel="apple-touch-icon-precomposed" href="images/icon_64.png" />
+    <link rel="apple-touch-icon-precomposed" href="images/icon.png" />
 
     <script src="solar/JulianDay.js"></script>
     <script src="solar/Time.js"></script>
@@ -30,10 +29,21 @@
             position: absolute;
             overflow: hidden;
         }
+        button {
+            height: 70px;
+            padding: 10px
+        }
     </style>
 </head>
 <body>
-    <button style='display: none; height: 100px;' id="calendarButton" onclick="attemptToAuthorise()">Connect to Google Calendar</button>
+    <div style='display: none;' id="buttons">
+        <button onclick="attemptToAuthorise()">Connect to Google Calendar</button>
+        <button onclick="document.getElementById('buttons').style.display = 'none';window.onresize();">Don't Connect</button>
+        <!-- reverse this with
+                localStorage.removeItem("neverConnectToCalendar");
+        -->
+        <button onclick="neverConnectToCalendar()">Never Connect to Google Calendar</button>
+    </div>
     <canvas id="display"></canvas>
     <script type="text/javascript">
         var star = new Image();
@@ -78,19 +88,19 @@
             }
         };
 
-        canvas.addEventListener("touchstart", function(evt) {
+        document.addEventListener("touchstart", function(evt) {
             evt.preventDefault();
             var touch = evt.changedTouches[evt.changedTouches.length - 1];
             clock.setSelection(touch.clientX, touch.clientY);
             clock.showSelection(true);
         }, false);
-        canvas.addEventListener("touchend", function (evt) {
+        document.addEventListener("touchend", function (evt) {
             evt.preventDefault();
             if (evt.touches.length == 0) {
                 timedHideSelection();
             }
         }, false);
-        canvas.addEventListener("touchmove", function(evt) {
+        document.addEventListener("touchmove", function(evt) {
             evt.preventDefault();
             var touch = evt.changedTouches[evt.changedTouches.length - 1];
             clock.setSelection(touch.clientX, touch.clientY);
@@ -127,12 +137,20 @@
 
         var authorized = new Promise();
 
+        function neverConnectToCalendar() {
+            localStorage.setItem("neverConnectToCalendar", true);
+            var button = document.getElementById('buttons');
+            button.style.display = 'none';
+            window.onresize();
+        }
+
         function attemptToAuthoriseOnLoad() {
+            if (localStorage.getItem("neverConnectToCalendar") != null) return;
             function handleAuthResult(authResult) {
                 if (authResult) {
                     authorized.resolve();
                 } else {
-                    var button = document.getElementById('calendarButton');
+                    var button = document.getElementById('buttons');
                     button.style.display = '';
                     window.onresize();
                 }
@@ -149,8 +167,8 @@
 
         function attemptToAuthorise() {
             gapi.auth.authorize( {client_id: clientId, scope: scopes, immediate: false}, function(authResult) {
-                var button = document.getElementById('calendarButton');
-                button.style.display = 'none';
+                var buttons = document.getElementById('buttons');
+                buttons.style.display = 'none';
                 window.onresize();
                 if (authResult) {
                     authorized.resolve();
