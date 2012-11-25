@@ -127,9 +127,7 @@
 
             clock.render(g, centerX - scale / 2, centerY - scale / 2, scale);
 
-            // could just call animate, but that ends up using much more
-            // CPU than we need.
-            setTimeout(animate, 70);
+            animate();
         }
 
         var reqFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
