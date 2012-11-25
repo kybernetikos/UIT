@@ -18,14 +18,14 @@
 
     <style>
         * {
-            margin: 0px;
-            padding: 0px;
+            margin: 0;
+            padding: 0;
         }
         html, body {
-            left: 0px;
-            right: 0px;
-            top: 0px;
-            bottom: 0px;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
             position: absolute;
             overflow: hidden;
         }
@@ -89,10 +89,14 @@
         };
 
         canvas.addEventListener("touchstart", function(evt) {
-            evt.preventDefault();
             var touch = evt.changedTouches[evt.changedTouches.length - 1];
-            clock.setSelection(touch.clientX, touch.clientY - canvas.clientTop);
-            clock.showSelection(true);
+            var x = touch.clientX;
+            var y = touch.clientY;
+            if (x > canvas.clientTop && y > canvas.clientLeft) {
+                evt.preventDefault();
+                clock.setSelection(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
+                clock.showSelection(true);
+            }
         }, false);
         canvas.addEventListener("touchend", function (evt) {
             evt.preventDefault();
@@ -101,10 +105,14 @@
             }
         }, false);
         canvas.addEventListener("touchmove", function(evt) {
-            evt.preventDefault();
             var touch = evt.changedTouches[evt.changedTouches.length - 1];
-            clock.setSelection(touch.clientX, touch.clientY - canvas.clientTop);
-            clock.showSelection(true);
+            var x = touch.clientX;
+            var y = touch.clientY;
+            if (x > canvas.clientTop && y > canvas.clientLeft) {
+                evt.preventDefault();
+                clock.setSelection(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
+                clock.showSelection(true);
+            }
         }, false);
 
         function render() {
@@ -238,7 +246,7 @@
                     if (end == start) end = null;
                     clock.addEvent(summary, start, end, star);
                 }
-            };
+            }
         });
 
     </script>
