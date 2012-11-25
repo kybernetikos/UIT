@@ -91,7 +91,7 @@
         canvas.addEventListener("touchstart", function(evt) {
             evt.preventDefault();
             var touch = evt.changedTouches[evt.changedTouches.length - 1];
-            clock.setSelection(touch.clientX, touch.clientY);
+            clock.setSelection(touch.clientX, touch.clientY - canvas.clientTop);
             clock.showSelection(true);
         }, false);
         canvas.addEventListener("touchend", function (evt) {
@@ -103,7 +103,7 @@
         canvas.addEventListener("touchmove", function(evt) {
             evt.preventDefault();
             var touch = evt.changedTouches[evt.changedTouches.length - 1];
-            clock.setSelection(touch.clientX, touch.clientY);
+            clock.setSelection(touch.clientX, touch.clientY - canvas.clientTop);
             clock.showSelection(true);
         }, false);
 
